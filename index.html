@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#121212" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Halal Counter" />
+  <title>Halal Counter</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #121212;
+      --accent:    #80D8FF;
+      --accent-dim:#3fa8d4;
+      --text:      #FFFFFF;
+      --modal-bg:  #1E1E1E;
+      --border:    #333;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    /* ── Header ── */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      z-index: 10;
+    }
+
+    .app-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+    }
+
+    #gear-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--accent);
+      padding: 6px;
+      border-radius: 50%;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #gear-btn:hover { background: rgba(128,216,255,0.12); }
+
+    /* ── Main Container ── */
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    /* ── Progress Ring ── */
+    .ring-wrapper {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) var(--progress-deg, 0deg), #2a2a2a var(--progress-deg, 0deg));
+      padding: 8px;
+    }
+
+    /* inner mask to make ring look hollow */
+    .ring-bg::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: var(--bg);
+    }
+
+    /* ── Counter Button ── */
+    #counter-btn {
+      position: relative;
+      z-index: 2;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: #1c1c1c;
+      border: 3px solid var(--accent);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.1s, box-shadow 0.3s;
+      box-shadow:
+        0 0 20px rgba(128,216,255,0.15),
+        0 0 0px rgba(128,216,255,0);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    #counter-btn:active {
+      transform: scale(0.95);
+    }
+
+    #counter-btn.pulse {
+      box-shadow:
+        0 0 30px rgba(128,216,255,0.6),
+        0 0 60px rgba(128,216,255,0.3);
+    }
+
+    #count-display {
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    #objective-display {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* ── Reset Button ── */
+    #reset-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: rgba(255,255,255,0.5);
+      padding: 8px 24px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    #reset-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Completion Flash ── */
+    #flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(128,216,255,0.18);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 50;
+      transition: opacity 0.15s;
+    }
+    #flash.show { opacity: 1; }
+
+    /* ── Modal Backdrop ── */
+    #modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    #modal-backdrop.open { display: flex; }
+
+    /* ── Settings Modal ── */
+    .modal {
+      background: var(--modal-bg);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .modal h2 {
+      font-size: 1.2rem;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .setting-group label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .setting-group label span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .setting-group input[type="number"] {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #2a2a2a;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .setting-group input[type="number"]:focus { border-color: var(--accent); }
+
+    .setting-group input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #333;
+      outline: none;
+      cursor: pointer;
+    }
+    .setting-group input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .setting-group input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-save, .btn-close {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-save { background: var(--accent); color: #000; }
+    .btn-close { background: #333; color: var(--text); }
+    .btn-save:hover, .btn-close:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+
+  <!-- Flash overlay for objective completion -->
+  <div id="flash"></div>
+
+  <!-- Header -->
+  <header>
+    <span class="app-title">حَلال Counter</span>
+    <button id="gear-btn" aria-label="Settings">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33
+                 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33
+                 l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0
+                 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06
+                 A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51
+                 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65
+                 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <div class="ring-wrapper">
+      <div class="ring-bg" id="progress-ring"></div>
+      <button id="counter-btn" aria-label="Increment counter">
+        <span id="count-display">0</span>
+        <span id="objective-display">/ 33</span>
+      </button>
+    </div>
+    <button id="reset-btn">Reset</button>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="modal-backdrop" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="modal">
+      <h2>Settings ⚙️</h2>
+
+      <div class="setting-group">
+        <label>
+          Objective
+          <span id="obj-val-label">33</span>
+        </label>
+        <input type="number" id="obj-input" min="1" max="9999" value="33" />
+      </div>
+
+      <div class="setting-group">
+        <label>
+          Vibrate every
+          <span id="vib-every-label">1</span> clicks
+        </label>
+        <input type="range" id="vib-every-input" min="1" max="33" value="1" />
+      </div>
+
+      <div class="setting-group">
+        <label>
+          Vibration strength
+          <span id="vib-str-label">80</span> ms
+        </label>
+        <input type="range" id="vib-str-input" min="10" max="500" step="10" value="80" />
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-close" id="modal-close">Cancel</button>
+        <button class="btn-save" id="modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Default State ──────────────────────────────────────────────
+    const DEFAULTS = {
+      count:     0,
+      objective: 33,
+      vibEvery:  1,
+      vibStr:    80
+    };
+
+    // ── Load persisted state ───────────────────────────────────────
+    function loadState() {
+      try {
+        const saved = localStorage.getItem('halalCounter');
+        return saved ? { ...DEFAULTS, ...JSON.parse(saved) } : { ...DEFAULTS };
+      } catch {
+        return { ...DEFAULTS };
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('halalCounter', JSON.stringify(state));
+      } catch {}
+    }
+
+    let state = loadState();
+
+    // ── DOM refs ───────────────────────────────────────────────────
+    const countDisplay     = document.getElementById('count-display');
+    const objectiveDisplay = document.getElementById('objective-display');
+    const progressRing     = document.getElementById('progress-ring');
+    const counterBtn       = document.getElementById('counter-btn');
+    const resetBtn         = document.getElementById('reset-btn');
+    const gearBtn          = document.getElementById('gear-btn');
+    const modalBackdrop    = document.getElementById('modal-backdrop');
+    const modalClose       = document.getElementById('modal-close');
+    const modalSave        = document.getElementById('modal-save');
+    const flash            = document.getElementById('flash');
+
+    const objInput         = document.getElementById('obj-input');
+    const vibEveryInput    = document.getElementById('vib-every-input');
+    const vibStrInput      = document.getElementById('vib-str-input');
+    const objValLabel      = document.getElementById('obj-val-label');
+    const vibEveryLabel    = document.getElementById('vib-every-label');
+    const vibStrLabel      = document.getElementById('vib-str-label');
+
+    // ── Render ─────────────────────────────────────────────────────
+    function updateUI() {
+      const { count, objective } = state;
+
+      countDisplay.textContent     = count;
+      objectiveDisplay.textContent = `/ ${objective}`;
+
+      // Conic gradient progress (0 → 360 deg)
+      const ratio = objective > 0 ? Math.min(count / objective, 1) : 0;
+      const deg   = ratio * 360;
+      progressRing.style.setProperty('--progress-deg', `${deg}deg`);
+      progressRing.style.background =
+        `conic-gradient(var(--accent) ${deg}deg, #2a2a2a ${deg}deg)`;
+
+      // Glow intensity scales with progress
+      const glow = Math.round(ratio * 40);
+      counterBtn.style.boxShadow =
+        `0 0 ${20 + glow}px rgba(128,216,255,${0.15 + ratio * 0.45}), ` +
+        `0 0 ${glow * 2}px rgba(128,216,255,${ratio * 0.25})`;
+    }
+
+    // ── Vibrate helper (Android; graceful failure on iOS) ──────────
+    function vibrate() {
+      try {
+        if (navigator.vibrate) navigator.vibrate(state.vibStr);
+      } catch {}
+    }
+
+    // ── Flash overlay on completion ────────────────────────────────
+    function showFlash() {
+      flash.classList.add('show');
+      setTimeout(() => flash.classList.remove('show'), 300);
+    }
+
+    // ── Pulse animation ────────────────────────────────────────────
+    function pulseBtn() {
+      counterBtn.classList.add('pulse');
+      setTimeout(() => counterBtn.classList.remove('pulse'), 300);
+    }
+
+    // ── Counter Logic ──────────────────────────────────────────────
+    counterBtn.addEventListener('click', () => {
+      state.count += 1;
+
+      // Vibrate every X clicks
+      if (state.vibEvery > 0 && state.count % state.vibEvery === 0) {
+        vibrate();
+      }
+
+      // Reached objective → show flash, vibrate, reset
+      if (state.count >= state.objective) {
+        showFlash();
+        pulseBtn();
+        vibrate();
+        state.count = 0;
+      }
+
+      updateUI();
+      saveState();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      state.count = 0;
+      updateUI();
+      saveState();
+    });
+
+    // ── Settings Modal ─────────────────────────────────────────────
+    function openModal() {
+      objInput.value      = state.objective;
+      vibEveryInput.value = state.vibEvery;
+      vibStrInput.value   = state.vibStr;
+      vibEveryInput.max   = Math.max(state.objective, DEFAULTS.objective);
+
+      objValLabel.textContent    = state.objective;
+      vibEveryLabel.textContent  = state.vibEvery;
+      vibStrLabel.textContent    = state.vibStr;
+
+      modalBackdrop.classList.add('open');
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove('open');
+    }
+
+    gearBtn.addEventListener('click', openModal);
+    modalClose.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+
+    // Live label updates while dragging sliders
+    objInput.addEventListener('input', () => {
+      objValLabel.textContent = objInput.value;
+    });
+    vibEveryInput.addEventListener('input', () => {
+      vibEveryLabel.textContent = vibEveryInput.value;
+    });
+    vibStrInput.addEventListener('input', () => {
+      vibStrLabel.textContent = vibStrInput.value;
+    });
+
+    modalSave.addEventListener('click', () => {
+      const newObj = Math.max(1, parseInt(objInput.value, 10) || DEFAULTS.objective);
+      state.objective = newObj;
+      state.vibEvery  = parseInt(vibEveryInput.value, 10) || 1;
+      state.vibStr    = parseInt(vibStrInput.value, 10) || 80;
+
+      // Clamp count if objective shrank below current count
+      if (state.count >= state.objective) state.count = 0;
+
+      saveState();
+      updateUI();
+      closeModal();
+    });
+
+    // ── Service Worker Registration ────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    // ── Init ───────────────────────────────────────────────────────
+    updateUI();
+  </script>
+</body>
+</html>
