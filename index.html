@@ -19,126 +19,57 @@
       --accent-dim:#3fa8d4;
       --text:      #FFFFFF;
       --modal-bg:  #1E1E1E;
+      --input-bg:  #2a2a2a;
       --border:    #333;
+    }
+
+    :root.dark-theme {
+      --bg:        #000000;
+      --accent:    #9E9E9E;
+      --accent-dim:#757575;
+      --modal-bg:  #111111;
+      --input-bg:  #1a1a1a;
+      --border:    #222;
     }
 
     html, body {
       height: 100%;
+      width: 100%;
       background: var(--bg);
       color: var(--text);
       font-family: 'Segoe UI', system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
       touch-action: manipulation;
     }
 
-    /* ── Header ── */
-    header {
+    /* ── Full Screen Counter Button ── */
+    #counter-btn {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 18px;
-      z-index: 10;
-    }
-
-    .app-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      color: var(--accent);
-    }
-
-    #gear-btn {
-      background: none;
+      inset: 0;
+      background: transparent;
       border: none;
       cursor: pointer;
-      color: var(--accent);
-      padding: 6px;
-      border-radius: 50%;
-      transition: background 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #gear-btn:hover { background: rgba(128,216,255,0.12); }
-
-    /* ── Main Container ── */
-    main {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 28px;
-    }
-
-    /* ── Progress Ring ── */
-    .ring-wrapper {
-      position: relative;
-      width: 260px;
-      height: 260px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .ring-bg {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: conic-gradient(var(--accent) var(--progress-deg, 0deg), #2a2a2a var(--progress-deg, 0deg));
-      padding: 8px;
-    }
-
-    /* inner mask to make ring look hollow */
-    .ring-bg::after {
-      content: '';
-      position: absolute;
-      inset: 8px;
-      border-radius: 50%;
-      background: var(--bg);
-    }
-
-    /* ── Counter Button ── */
-    #counter-btn {
-      position: relative;
-      z-index: 2;
-      width: 220px;
-      height: 220px;
-      border-radius: 50%;
-      background: #1c1c1c;
-      border: 3px solid var(--accent);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      transition: transform 0.1s, box-shadow 0.3s;
-      box-shadow:
-        0 0 20px rgba(128,216,255,0.15),
-        0 0 0px rgba(128,216,255,0);
+      z-index: 1;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
 
-    #counter-btn:active {
-      transform: scale(0.95);
-    }
-
-    #counter-btn.pulse {
-      box-shadow:
-        0 0 30px rgba(128,216,255,0.6),
-        0 0 60px rgba(128,216,255,0.3);
+    /* ── Centered Number Display ── */
+    #center-display {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      z-index: 2;
     }
 
     #count-display {
-      font-size: 4rem;
+      font-size: 6rem;
       font-weight: 700;
       color: var(--accent);
       line-height: 1;
@@ -146,8 +77,22 @@
     }
 
     #objective-display {
-      font-size: 0.9rem;
+      font-size: 1.1rem;
       color: rgba(255,255,255,0.45);
+    }
+
+    /* ── Bottom Bar ── */
+    #bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 32px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      z-index: 3;
     }
 
     /* ── Reset Button ── */
@@ -155,16 +100,31 @@
       background: none;
       border: 1px solid var(--border);
       color: rgba(255,255,255,0.5);
-      padding: 8px 24px;
+      padding: 10px 28px;
       border-radius: 20px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       transition: border-color 0.2s, color 0.2s;
     }
     #reset-btn:hover {
       border-color: var(--accent);
       color: var(--accent);
     }
+
+    /* ── Gear Button ── */
+    #gear-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--accent);
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #gear-btn:hover { background: rgba(128,216,255,0.12); }
 
     /* ── Completion Flash ── */
     #flash {
@@ -216,7 +176,7 @@
       gap: 8px;
     }
 
-    .setting-group label {
+    .setting-group > label {
       font-size: 0.85rem;
       color: rgba(255,255,255,0.7);
       display: flex;
@@ -224,7 +184,7 @@
       align-items: center;
     }
 
-    .setting-group label span {
+    .setting-group > label span {
       color: var(--accent);
       font-weight: 600;
     }
@@ -234,7 +194,7 @@
       padding: 10px 14px;
       border-radius: 10px;
       border: 1px solid var(--border);
-      background: #2a2a2a;
+      background: var(--input-bg);
       color: var(--text);
       font-size: 1rem;
       outline: none;
@@ -268,6 +228,56 @@
       border: none;
     }
 
+    /* ── Toggle Switch ── */
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toggle-label {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-track::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s;
+    }
+
+    .toggle-switch input:checked + .toggle-track { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-track::before { transform: translateX(20px); }
+
     .modal-actions {
       display: flex;
       gap: 12px;
@@ -293,9 +303,18 @@
   <!-- Flash overlay for objective completion -->
   <div id="flash"></div>
 
-  <!-- Header -->
-  <header>
-    <span class="app-title">حَلال Counter</span>
+  <!-- Full screen counter button -->
+  <button id="counter-btn" aria-label="Increment counter"></button>
+
+  <!-- Centered number display -->
+  <div id="center-display">
+    <span id="count-display">0</span>
+    <span id="objective-display">/ 33</span>
+  </div>
+
+  <!-- Bottom bar with 2 buttons -->
+  <div id="bottom-bar">
+    <button id="reset-btn">Reset</button>
     <button id="gear-btn" aria-label="Settings">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -309,19 +328,7 @@
                  1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
     </button>
-  </header>
-
-  <!-- Main Content -->
-  <main>
-    <div class="ring-wrapper">
-      <div class="ring-bg" id="progress-ring"></div>
-      <button id="counter-btn" aria-label="Increment counter">
-        <span id="count-display">0</span>
-        <span id="objective-display">/ 33</span>
-      </button>
-    </div>
-    <button id="reset-btn">Reset</button>
-  </main>
+  </div>
 
   <!-- Settings Modal -->
   <div id="modal-backdrop" role="dialog" aria-modal="true" aria-label="Settings">
@@ -338,10 +345,10 @@
 
       <div class="setting-group">
         <label>
-          Vibrate every
-          <span id="vib-every-label">1</span> clicks
+          Vibrate every (clicks)
+          <span id="vib-every-label">1</span>
         </label>
-        <input type="range" id="vib-every-input" min="1" max="33" value="1" />
+        <input type="number" id="vib-every-input" min="1" value="1" />
       </div>
 
       <div class="setting-group">
@@ -350,6 +357,16 @@
           <span id="vib-str-label">80</span> ms
         </label>
         <input type="range" id="vib-str-input" min="10" max="500" step="10" value="80" />
+      </div>
+
+      <div class="setting-group">
+        <div class="toggle-row">
+          <span class="toggle-label">Dark theme</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="dark-theme-toggle" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
       </div>
 
       <div class="modal-actions">
@@ -365,7 +382,8 @@
       count:     0,
       objective: 33,
       vibEvery:  1,
-      vibStr:    80
+      vibStr:    80,
+      darkTheme: false
     };
 
     // ── Load persisted state ───────────────────────────────────────
@@ -389,7 +407,6 @@
     // ── DOM refs ───────────────────────────────────────────────────
     const countDisplay     = document.getElementById('count-display');
     const objectiveDisplay = document.getElementById('objective-display');
-    const progressRing     = document.getElementById('progress-ring');
     const counterBtn       = document.getElementById('counter-btn');
     const resetBtn         = document.getElementById('reset-btn');
     const gearBtn          = document.getElementById('gear-btn');
@@ -401,29 +418,25 @@
     const objInput         = document.getElementById('obj-input');
     const vibEveryInput    = document.getElementById('vib-every-input');
     const vibStrInput      = document.getElementById('vib-str-input');
+    const darkThemeToggle  = document.getElementById('dark-theme-toggle');
     const objValLabel      = document.getElementById('obj-val-label');
     const vibEveryLabel    = document.getElementById('vib-every-label');
     const vibStrLabel      = document.getElementById('vib-str-label');
 
+    // ── Apply theme ────────────────────────────────────────────────
+    function applyTheme() {
+      if (state.darkTheme) {
+        document.documentElement.classList.add('dark-theme');
+      } else {
+        document.documentElement.classList.remove('dark-theme');
+      }
+    }
+
     // ── Render ─────────────────────────────────────────────────────
     function updateUI() {
       const { count, objective } = state;
-
       countDisplay.textContent     = count;
       objectiveDisplay.textContent = `/ ${objective}`;
-
-      // Conic gradient progress (0 → 360 deg)
-      const ratio = objective > 0 ? Math.min(count / objective, 1) : 0;
-      const deg   = ratio * 360;
-      progressRing.style.setProperty('--progress-deg', `${deg}deg`);
-      progressRing.style.background =
-        `conic-gradient(var(--accent) ${deg}deg, #2a2a2a ${deg}deg)`;
-
-      // Glow intensity scales with progress
-      const glow = Math.round(ratio * 40);
-      counterBtn.style.boxShadow =
-        `0 0 ${20 + glow}px rgba(128,216,255,${0.15 + ratio * 0.45}), ` +
-        `0 0 ${glow * 2}px rgba(128,216,255,${ratio * 0.25})`;
     }
 
     // ── Vibrate helper (Android; graceful failure on iOS) ──────────
@@ -439,12 +452,6 @@
       setTimeout(() => flash.classList.remove('show'), 300);
     }
 
-    // ── Pulse animation ────────────────────────────────────────────
-    function pulseBtn() {
-      counterBtn.classList.add('pulse');
-      setTimeout(() => counterBtn.classList.remove('pulse'), 300);
-    }
-
     // ── Counter Logic ──────────────────────────────────────────────
     function handlePress() {
       state.count += 1;
@@ -457,7 +464,6 @@
       // Reached objective → show flash, vibrate, reset
       if (state.count >= state.objective) {
         showFlash();
-        pulseBtn();
         vibrate();
         state.count = 0;
       }
@@ -489,14 +495,15 @@
 
     // ── Settings Modal ─────────────────────────────────────────────
     function openModal() {
-      objInput.value      = state.objective;
-      vibEveryInput.value = state.vibEvery;
-      vibStrInput.value   = state.vibStr;
-      vibEveryInput.max   = Math.max(state.objective, DEFAULTS.objective);
+      objInput.value          = state.objective;
+      vibEveryInput.value     = state.vibEvery;
+      vibEveryInput.max       = state.objective;
+      vibStrInput.value       = state.vibStr;
+      darkThemeToggle.checked = state.darkTheme;
 
-      objValLabel.textContent    = state.objective;
-      vibEveryLabel.textContent  = state.vibEvery;
-      vibStrLabel.textContent    = state.vibStr;
+      objValLabel.textContent   = state.objective;
+      vibEveryLabel.textContent = state.vibEvery;
+      vibStrLabel.textContent   = state.vibStr;
 
       modalBackdrop.classList.add('open');
     }
@@ -511,7 +518,7 @@
       if (e.target === modalBackdrop) closeModal();
     });
 
-    // Live label updates while dragging sliders
+    // Live label updates
     objInput.addEventListener('input', () => {
       objValLabel.textContent = objInput.value;
     });
@@ -525,12 +532,14 @@
     modalSave.addEventListener('click', () => {
       const newObj = Math.max(1, parseInt(objInput.value, 10) || DEFAULTS.objective);
       state.objective = newObj;
-      state.vibEvery  = parseInt(vibEveryInput.value, 10) || 1;
+      state.vibEvery  = Math.min(newObj, Math.max(1, parseInt(vibEveryInput.value, 10) || 1));
       state.vibStr    = parseInt(vibStrInput.value, 10) || 80;
+      state.darkTheme = darkThemeToggle.checked;
 
       // Clamp count if objective shrank below current count
       if (state.count >= state.objective) state.count = 0;
 
+      applyTheme();
       saveState();
       updateUI();
       closeModal();
@@ -544,6 +553,7 @@
     }
 
     // ── Init ───────────────────────────────────────────────────────
+    applyTheme();
     updateUI();
   </script>
 </body>
