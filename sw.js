@@ -1,4 +1,4 @@
-const CACHE_NAME = 'halal-counter-v1';
+const CACHE_NAME = 'halal-counter-v2';
 const ASSETS = [
   './',
   './index.html',
