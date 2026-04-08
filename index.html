@@ -446,7 +446,7 @@
     }
 
     // ── Counter Logic ──────────────────────────────────────────────
-    counterBtn.addEventListener('click', () => {
+    function handlePress() {
       state.count += 1;
 
       // Vibrate every X clicks
@@ -464,6 +464,21 @@
 
       updateUI();
       saveState();
+    }
+
+    // Use touchstart for immediate vibration on Android (direct touch gesture
+    // gives the most reliable user-activation context for navigator.vibrate).
+    // Fall back to click on non-touch devices.
+    let lastTouchTime = 0;
+    counterBtn.addEventListener('touchstart', () => {
+      lastTouchTime = Date.now();
+      handlePress();
+    }, { passive: true });
+
+    counterBtn.addEventListener('click', () => {
+      // Suppress the synthetic click that follows a touchstart on mobile
+      if (Date.now() - lastTouchTime < 500) return;
+      handlePress();
     });
 
     resetBtn.addEventListener('click', () => {
