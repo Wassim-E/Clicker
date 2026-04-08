@@ -345,10 +345,10 @@
 
       <div class="setting-group">
         <label>
-          Vibrate every
+          Vibrate every (clicks)
           <span id="vib-every-label">1</span>
         </label>
-        <input type="number" id="vib-every-input" min="1" max="9999" value="1" />
+        <input type="number" id="vib-every-input" min="1" value="1" />
       </div>
 
       <div class="setting-group">
@@ -497,6 +497,7 @@
     function openModal() {
       objInput.value          = state.objective;
       vibEveryInput.value     = state.vibEvery;
+      vibEveryInput.max       = state.objective;
       vibStrInput.value       = state.vibStr;
       darkThemeToggle.checked = state.darkTheme;
 
@@ -531,7 +532,7 @@
     modalSave.addEventListener('click', () => {
       const newObj = Math.max(1, parseInt(objInput.value, 10) || DEFAULTS.objective);
       state.objective = newObj;
-      state.vibEvery  = Math.max(1, parseInt(vibEveryInput.value, 10) || 1);
+      state.vibEvery  = Math.min(newObj, Math.max(1, parseInt(vibEveryInput.value, 10) || 1));
       state.vibStr    = parseInt(vibStrInput.value, 10) || 80;
       state.darkTheme = darkThemeToggle.checked;
 
